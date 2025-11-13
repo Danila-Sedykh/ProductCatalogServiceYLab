@@ -8,18 +8,17 @@ import java.time.Instant;
 /**
  * Сервис аудита, сохраняет активность пользователя в репозиторий аудита чперез FileAuditRepository.
  */
-
 public class AuditService {
-    private final FileAuditRepository repo;
+    private final FileAuditRepository auditRepository;
 
     public AuditService(FileAuditRepository repo) {
-        this.repo = repo;
+        this.auditRepository = repo;
     }
 
     public void record(User user, String action, String details) {
         String entry = String.format("%s | user=%s | action=%s | details=%s",
                 Instant.now(), user == null ? "anonymous" : user.getUsername(), action, details);
-        repo.append(entry);
+        auditRepository.append(entry);
     }
 
 }
