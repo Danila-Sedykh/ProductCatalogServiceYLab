@@ -145,7 +145,7 @@ public class ConsoleApp {
     }
 
     private static void handleAddProduct(Scanner scanner, ProductService service, FileMetaRepository meta, AuditService audit, User current) {
-        System.out.print("Добавить номер (id): "); String id = scanner.nextLine().trim();
+        System.out.print("Добавить номер (id): "); Long id = Long.valueOf(scanner.nextLine().trim());
         System.out.print("Название продукта: "); String name = scanner.nextLine().trim();
 
         String category = chooseOrCreate(scanner, "категорию", meta.listCategories(), c -> meta.addCategory(c));
@@ -154,12 +154,12 @@ public class ConsoleApp {
         System.out.print("Цена: "); double price = Double.parseDouble(scanner.nextLine().trim());
         Product p = new Product(id, name, category, brand, price);
         service.addProduct(p);
-        audit.record(current, "add_product", p.getId());
+        audit.record(current, "add_product", String.valueOf(p.getId()));
         System.out.println("Продукт добавлен");
     }
 
     private static void handleUpdateProduct(Scanner scanner, ProductService service, FileMetaRepository meta, AuditService audit, User current) {
-        System.out.print("Введите номер продукта (id): "); String id = scanner.nextLine().trim();
+        System.out.print("Введите номер продукта (id): "); Long id = scanner.nextLong();
         Optional<Product> opt = service.getById(id);
         if (opt.isEmpty()) { System.out.println("Не найден"); return; }
         Product ex = opt.get();
@@ -170,19 +170,19 @@ public class ConsoleApp {
         String newBrand = chooseOrCreate(scanner, "бренд", meta.listBrands(), b -> meta.addBrand(b)); ex.setBrand(newBrand);
         System.out.print("Цена ("+ex.getPrice()+"): "); String p = scanner.nextLine().trim(); if (!p.isEmpty()) ex.setPrice(Double.parseDouble(p));
         boolean ok = service.updateProduct(id, ex);
-        audit.record(current, "update_product", id);
+        audit.record(current, "update_product", String.valueOf(id));
         System.out.println(ok ? "Обновлено" : "Произошла ошибка");
     }
 
     private static void handleDeleteProduct(Scanner scanner, ProductService service, AuditService audit, User current) {
         System.out.print("Введите номер продукта (id): "); String id = scanner.nextLine().trim();
-        boolean ok = service.deleteProduct(id);
+        boolean ok = service.deleteProduct(Long.valueOf(id));
         audit.record(current, "delete_product", id);
         System.out.println(ok ? "Удалено" : "Не найдено");
     }
 
     private static void handleViewProduct(Scanner scanner, ProductService service) {
-        System.out.print("Введите номер продукта (id): "); String id = scanner.nextLine().trim();
+        System.out.print("Введите номер продукта (id): "); Long id = scanner.nextLong();
         service.getById(id).ifPresentOrElse(System.out::println, () -> System.out.println("Не найдено"));
     }
 

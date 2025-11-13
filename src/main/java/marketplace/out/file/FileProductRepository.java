@@ -16,7 +16,7 @@ import java.util.*;
 
 public class FileProductRepository {
     private final Path file;
-    private final Map<String, Product> productStorage = new LinkedHashMap<>();
+    private final Map<Long, Product> productStorage = new LinkedHashMap<>();
 
     public FileProductRepository(Path file) {
         this.file = file;
@@ -29,7 +29,7 @@ public class FileProductRepository {
             reader.lines().forEach(line -> {
                 String[] parts = line.split(";");
                 if (parts.length < 5) return;
-                String id = parts[0];
+                Long id = Long.valueOf(parts[0]);
                 String name = parts[1];
                 String category = parts[2];
                 String brand = parts[3];
@@ -56,7 +56,7 @@ public class FileProductRepository {
         return new ArrayList<>(productStorage.values());
     }
 
-    public Optional<Product> findById(String id) {
+    public Optional<Product> findById(Long id) {
         return Optional.ofNullable(productStorage.get(id));
     }
 
@@ -65,7 +65,7 @@ public class FileProductRepository {
         persist();
     }
 
-    public boolean update(String id, Product update){
+    public boolean update(Long id, Product update){
         if (!productStorage.containsKey(id)) {
             return false;
         }
@@ -74,7 +74,7 @@ public class FileProductRepository {
         return true;
     }
 
-    public boolean delete(String id) {
+    public boolean delete(Long id) {
         if (!productStorage.containsKey(id)) {
             return false;
         }

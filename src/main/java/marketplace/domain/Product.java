@@ -3,13 +3,13 @@ package marketplace.domain;
 import java.util.Objects;
 
 public class Product {
-    private final String id;
+    private final Long id;
     private String name;
     private String category;
     private String brand;
     private double price;
 
-    public Product(String id, String name, String category, String brand, double price) {
+    public Product(Long id, String name, String category, String brand, double price) {
         this.id = Objects.requireNonNull(id, "Не может быть null");
         this.name = name;
         this.category = category;
@@ -17,7 +17,7 @@ public class Product {
         this.price = price;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
