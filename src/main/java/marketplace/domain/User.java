@@ -3,19 +3,19 @@ package marketplace.domain;
 public class User {
     private static int counter = 0;
 
-    private final String id;
+    private final Long id;
     private final String username;
     private final String password;
     private final String role;
 
     public User(String username, String password, String role) {
-        this.id = String.valueOf(++counter);
+        this.id = Long.valueOf(++counter);
         this.username = username;
         this.password = password;
         this.role = role;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 

@@ -29,19 +29,19 @@ public class ProductService {
         cache.invalidateAll();
     }
 
-    public boolean updateProduct(String id, Product updated) {
+    public boolean updateProduct(Long id, Product updated) {
         boolean result = productRepository.update(id, updated);
         if (result) cache.invalidateAll();
         return result;
     }
 
-    public boolean deleteProduct(String id) {
+    public boolean deleteProduct(Long id) {
         boolean result = productRepository.delete(id);
         if (result) cache.invalidateAll();
         return result;
     }
 
-    public Optional<Product> getById(String id) {
+    public Optional<Product> getById(Long id) {
         return productRepository.findById(id);
     }
 
