@@ -1,24 +1,30 @@
 package marketplace.domain;
 
-import java.util.Objects;
 
 public class Product {
-    private final Long id;
+    private Long id;
+    private Long code;
     private String name;
     private String category;
     private String brand;
     private double price;
 
-    public Product(Long id, String name, String category, String brand, double price) {
-        this.id = Objects.requireNonNull(id, "Не может быть null");
-        this.name = name;
-        this.category = category;
-        this.brand = brand;
-        this.price = price;
-    }
+
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getCode() {
+        return code;
+    }
+
+    public void setCode(Long code) {
+        this.code = code;
     }
 
     public String getName() {
@@ -62,18 +68,18 @@ public class Product {
             return false;
         }
         Product product = (Product) o;
-        return id.equals(product.id);
+        return code.equals(product.code);
     }
 
     @Override
     public int hashCode(){
-        return id.hashCode();
+        return code.hashCode();
     }
 
     @Override
     public String toString(){
         return String.format("id = '%s', name = '%s', category = '%s', brand = '%s', prise = %.2f",
-                id, name, category, brand, price);
+                code, name, category, brand, price);
     }
 
 }

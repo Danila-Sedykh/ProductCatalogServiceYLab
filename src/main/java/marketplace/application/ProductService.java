@@ -2,7 +2,8 @@ package marketplace.application;
 
 import marketplace.domain.Product;
 import marketplace.out.cache.LruCache;
-import marketplace.out.file.FileProductRepository;
+import marketplace.out.repository.ProductRepositoryJdbc;
+
 
 import java.util.List;
 import java.util.Locale;
@@ -16,10 +17,10 @@ import java.util.stream.Collectors;
  */
 
 public class ProductService {
-    private final FileProductRepository productRepository;
+    private final ProductRepositoryJdbc productRepository;
     private final LruCache<String, List<Product>> cache;
 
-    public ProductService(FileProductRepository productRepository, LruCache<String, List<Product>> cache){
+    public ProductService(ProductRepositoryJdbc productRepository, LruCache<String, List<Product>> cache){
         this.productRepository = productRepository;
         this.cache = cache;
     }
@@ -29,8 +30,8 @@ public class ProductService {
         cache.invalidateAll();
     }
 
-    public boolean updateProduct(Long id, Product updated) {
-        boolean result = productRepository.update(id, updated);
+    public boolean updateProduct(Product updated) {
+        boolean result = productRepository.update(updated);
         if (result) cache.invalidateAll();
         return result;
     }
