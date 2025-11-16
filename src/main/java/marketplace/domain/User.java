@@ -1,22 +1,31 @@
 package marketplace.domain;
 
 public class User {
-    private static int counter = 0;
 
-    private final Long id;
-    private final String username;
-    private final String password;
-    private final String role;
+    private Long id;
+    private String username;
+    private String password;
+    private String role;
 
-    public User(String username, String password, String role) {
-        this.id = Long.valueOf(++counter);
-        this.username = username;
-        this.password = password;
-        this.role = role;
-    }
 
     public Long getId() {
         return id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getUsername() {

@@ -1,7 +1,7 @@
 package marketplace.application;
 
 import marketplace.domain.User;
-import marketplace.out.file.FileUserRepository;
+import marketplace.out.repository.UserRepositoryJdbc;
 
 
 import java.util.Optional;
@@ -11,9 +11,9 @@ import java.util.Optional;
  */
 
 public class AuthService {
-    private final FileUserRepository userRepo;
+    private final UserRepositoryJdbc userRepo;
 
-    public AuthService(FileUserRepository userRepo) {
+    public AuthService(UserRepositoryJdbc userRepo) {
         this.userRepo = userRepo;
     }
 
@@ -25,7 +25,10 @@ public class AuthService {
 
     public boolean register(String username, String password, String role) {
         if (userRepo.findByUsername(username).isPresent()) return false;
-        User u = new User(username, password, role);
+        User u = new User();
+        u.setUsername(username);
+        u.setPassword(password);
+        u.setRole(role);
         userRepo.save(u);
         return true;
     }

@@ -3,16 +3,18 @@ package marketplace.in.console;
 import marketplace.application.AuditService;
 import marketplace.application.AuthService;
 import marketplace.application.ProductService;
+import marketplace.db.DataSourceFactory;
+import marketplace.db.LiquibaseRunner;
 import marketplace.domain.Product;
 import marketplace.domain.User;
-import marketplace.out.file.FileAuditRepository;
 import marketplace.out.cache.LruCache;
-import marketplace.out.file.FileMetaRepository;
-import marketplace.out.file.FileProductRepository;
-import marketplace.out.file.FileUserRepository;
+import marketplace.out.repository.AuditRepositoryJdbc;
+import marketplace.out.repository.MetaRepositoryJdbc;
+import marketplace.out.repository.ProductRepositoryJdbc;
+import marketplace.out.repository.UserRepositoryJdbc;
 
 
-import java.nio.file.Path;
+import javax.sql.DataSource;
 import java.util.*;
 
 /**
@@ -20,19 +22,34 @@ import java.util.*;
  */
 
 public class ConsoleApp {
-    public static void main(String[] args) throws Exception {
-        Path dataDir = Path.of(".");
-        FileProductRepository repo = new FileProductRepository(dataDir.resolve("products.db"));
+    private static final String APP_SCHEMA = "marketplace";
+    private static final String LIQUIBASE_SCHEMA = "liquibase_schema";
+
+    public static void main(String[] args) {
+
+        DataSource dataSource = DataSourceFactory.create(
+                "jdbc:postgresql://localhost:54432/db_y_lab",
+                "user_123",
+                "pass_123",
+                5
+        );
+
+        LiquibaseRunner.runLiquibase(
+                dataSource,
+                "db/changelog/db-changelog-master.xml",
+                LIQUIBASE_SCHEMA,
+                APP_SCHEMA
+        );
+
+        ProductRepositoryJdbc productRepo = new ProductRepositoryJdbc(dataSource, APP_SCHEMA);
+        UserRepositoryJdbc userRepo = new UserRepositoryJdbc(dataSource, APP_SCHEMA);
+        MetaRepositoryJdbc metaRepo = new MetaRepositoryJdbc(dataSource, APP_SCHEMA);
+        AuditRepositoryJdbc auditRepo = new AuditRepositoryJdbc(dataSource, APP_SCHEMA);
         LruCache<String, List<Product>> cache = new LruCache<>(50);
-        ProductService service = new ProductService(repo, cache);
 
-        FileUserRepository userRepo = new FileUserRepository(dataDir.resolve("users.db"));
+        ProductService productService = new ProductService(productRepo, cache);
         AuthService authService = new AuthService(userRepo);
-
-        FileMetaRepository meta = new FileMetaRepository(dataDir.resolve("meta.db"));
-
-        FileAuditRepository auditRepo = new FileAuditRepository(dataDir.resolve("audit.log"));
-        AuditService audit = new AuditService(auditRepo);
+        AuditService auditService = new AuditService(auditRepo);
 
         Scanner scanner = new Scanner(System.in);
         User current = null;
@@ -48,13 +65,13 @@ public class ConsoleApp {
                 String opt = scanner.nextLine().trim();
                 switch (opt) {
                     case "1":
-                        current = handleLogin(scanner, authService, audit);
+                        current = handleLogin(scanner, authService, auditService);
                         break;
                     case "2":
-                        handleRegister(scanner, authService, audit);
+                        handleRegister(scanner, authService, auditService);
                         break;
                     case "3":
-                        System.out.println("Работа завершера");
+                        System.out.println("Работа завершена");
                         break mainLoop;
                     default:
                         System.out.println("Неизвестная операция");
@@ -64,7 +81,7 @@ public class ConsoleApp {
                 System.out.println("1) Добавить продукт");
                 System.out.println("2) Обновить продукт");
                 System.out.println("3) Удалить продукт");
-                System.out.println("4) Найти продукт по номеру (id)");
+                System.out.println("4) Найти продукт по id");
                 System.out.println("5) Поиск продуктов");
                 System.out.println("6) Всего продуктов");
                 System.out.println("7) Управление категориями/брендами");
@@ -74,37 +91,61 @@ public class ConsoleApp {
                 String opt = scanner.nextLine().trim();
                 switch (opt) {
                     case "1":
-                        handleAddProduct(scanner, service, meta, audit, current);
+                        handleAddProduct(scanner, productService, metaRepo, auditService, current);
                         break;
                     case "2":
-                        handleUpdateProduct(scanner, service, meta, audit, current);
+                        handleUpdateProduct(scanner, productService, metaRepo, auditService, current);
                         break;
                     case "3":
-                        handleDeleteProduct(scanner, service, audit, current);
+                        handleDeleteProduct(scanner, productService, auditService, current);
                         break;
                     case "4":
-                        handleViewProduct(scanner, service);
+                        handleViewProduct(scanner, productService);
                         break;
                     case "5":
-                        handleSearch(scanner, service, audit, current);
+                        handleSearch(scanner, productService, auditService, current);
                         break;
                     case "6":
-                        System.out.println("Всего продуктов =" + service.count());
+                        System.out.println("Всего продуктов = " + productService.count());
                         break;
                     case "7":
-                        manageMeta(scanner, meta);
+                        manageMeta(scanner, metaRepo);
                         break;
                     case "8":
-                        audit.record(current, "logout", "user logged out");
+                        auditService.record(current, "logout", "Работа завершена");
                         current = null;
                         break;
                     case "9":
-                        audit.record(current, "exit", "application exit");
-                        System.out.println("Работа завершера");
+                        auditService.record(current, "exit", "Выход из приложения");
+                        System.out.println("Работа завершена");
                         break mainLoop;
                     default:
                         System.out.println("Неизвестная операция");
                 }
+            }
+        }
+    }
+
+    private static void manageMeta(Scanner scanner, MetaRepositoryJdbc metaRepo) {
+        while (true) {
+            System.out.println("1) Список категорий");
+            System.out.println("2) Добавить категорию");
+            System.out.println("3) Удалить категорию");
+            System.out.println("4) Список брендов");
+            System.out.println("5) Добавить бренд");
+            System.out.println("6) Удалить бренд");
+            System.out.println("7) Назад");
+            System.out.print("> ");
+            String opt = scanner.nextLine().trim();
+            switch (opt) {
+                case "1": metaRepo.listCategories().forEach(System.out::println); break;
+                case "2": System.out.print("категория: "); metaRepo.addCategory(scanner.nextLine().trim()); break;
+                case "3": System.out.print("категория: "); metaRepo.removeCategory(scanner.nextLine().trim()); break;
+                case "4": metaRepo.listBrands().forEach(System.out::println); break;
+                case "5": System.out.print("бренд: "); metaRepo.addBrand(scanner.nextLine().trim()); break;
+                case "6": System.out.print("бренд: "); metaRepo.removeBrand(scanner.nextLine().trim()); break;
+                case "7": return;
+                default: System.out.println("Неизвестная операция");
             }
         }
     }
@@ -144,32 +185,38 @@ public class ConsoleApp {
         }
     }
 
-    private static void handleAddProduct(Scanner scanner, ProductService service, FileMetaRepository meta, AuditService audit, User current) {
-        System.out.print("Добавить номер (id): "); Long id = Long.valueOf(scanner.nextLine().trim());
+    private static void handleAddProduct(Scanner scanner, ProductService service, MetaRepositoryJdbc meta, AuditService audit, User current) {
+        System.out.print("Добавить номер (code): "); Long code = Long.valueOf(scanner.nextLine().trim());
         System.out.print("Название продукта: "); String name = scanner.nextLine().trim();
 
         String category = chooseOrCreate(scanner, "категорию", meta.listCategories(), c -> meta.addCategory(c));
         String brand = chooseOrCreate(scanner, "бренд", meta.listBrands(), b -> meta.addBrand(b));
 
         System.out.print("Цена: "); double price = Double.parseDouble(scanner.nextLine().trim());
-        Product p = new Product(id, name, category, brand, price);
+        Product p = new Product();
+        p.setCode(code);
+        p.setName(name);
+        p.setCategory(category);
+        p.setBrand(brand);
+        p.setPrice(price);
         service.addProduct(p);
-        audit.record(current, "add_product", String.valueOf(p.getId()));
+        audit.record(current, "add_product", String.valueOf(p.getCode()));
         System.out.println("Продукт добавлен");
     }
 
-    private static void handleUpdateProduct(Scanner scanner, ProductService service, FileMetaRepository meta, AuditService audit, User current) {
+    private static void handleUpdateProduct(Scanner scanner, ProductService service, MetaRepositoryJdbc meta, AuditService audit, User current) {
         System.out.print("Введите номер продукта (id): "); Long id = scanner.nextLong();
         Optional<Product> opt = service.getById(id);
         if (opt.isEmpty()) { System.out.println("Не найден"); return; }
         Product ex = opt.get();
+        System.out.print("Номер ("+ex.getCode()+"): "); Long newCode = scanner.nextLong(); if (!(newCode == null)) ex.setCode(newCode);
         System.out.print("Название ("+ex.getName()+"): "); String newName = scanner.nextLine().trim(); if (!newName.isEmpty()) ex.setName(newName);
         System.out.println("Выберите категорию:");
         String newCat = chooseOrCreate(scanner, "категорию", meta.listCategories(), c -> meta.addCategory(c)); ex.setCategory(newCat);
         System.out.println("Выберите бренд:");
         String newBrand = chooseOrCreate(scanner, "бренд", meta.listBrands(), b -> meta.addBrand(b)); ex.setBrand(newBrand);
         System.out.print("Цена ("+ex.getPrice()+"): "); String p = scanner.nextLine().trim(); if (!p.isEmpty()) ex.setPrice(Double.parseDouble(p));
-        boolean ok = service.updateProduct(id, ex);
+        boolean ok = service.updateProduct(ex);
         audit.record(current, "update_product", String.valueOf(id));
         System.out.println(ok ? "Обновлено" : "Произошла ошибка");
     }
@@ -196,30 +243,6 @@ public class ConsoleApp {
         List<Product> found = service.search(criteria, min, max);
         found.forEach(System.out::println);
         audit.record(current, "search", String.format("criteria=%s,min=%s,max=%s", criteria, min, max));
-    }
-
-    private static void manageMeta(Scanner scanner, FileMetaRepository meta) {
-        while (true) {
-            System.out.println("1) Список категорий");
-            System.out.println("2) Добавить категорию");
-            System.out.println("3) Удалить категорию");
-            System.out.println("4) Список брендов");
-            System.out.println("5) Добавить бренд");
-            System.out.println("6) Удалить бренд");
-            System.out.println("7) Назад");
-            System.out.print("> ");
-            String opt = scanner.nextLine().trim();
-            switch (opt) {
-                case "1": meta.listCategories().forEach(System.out::println); break;
-                case "2": System.out.print("категория: "); meta.addCategory(scanner.nextLine().trim()); break;
-                case "3": System.out.print("категория: "); meta.removeCategory(scanner.nextLine().trim()); break;
-                case "4": meta.listBrands().forEach(System.out::println); break;
-                case "5": System.out.print("бренд: "); meta.addBrand(scanner.nextLine().trim()); break;
-                case "6": System.out.print("бренд: "); meta.removeBrand(scanner.nextLine().trim()); break;
-                case "7": return;
-                default: System.out.println("Неизвестная операция");
-            }
-        }
     }
 
     private static String chooseOrCreate(Scanner scanner, String name, List<String> options, java.util.function.Consumer<String> onCreate) {

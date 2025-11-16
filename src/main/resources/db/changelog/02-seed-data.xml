@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="seed-1" author="user_123">
+        <insert tableName="categories" schemaName="${db.appSchema}">
+            <column name="name" value="Верхняя одежда"/>
+        </insert>
+
+        <insert tableName="categories" schemaName="${db.appSchema}">
+            <column name="name" value="Аксессуары"/>
+        </insert>
+
+        <insert tableName="brands" schemaName="${db.appSchema}">
+            <column name="name" value="Louis Vuitton"/>
+        </insert>
+
+        <insert tableName="brands" schemaName="${db.appSchema}">
+            <column name="name" value="Zara"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="seed-2" author="user_123">
+        <insert tableName="users" schemaName="${db.appSchema}">
+            <column name="id" valueNumeric="1"/>
+            <column name="username" value="admin"/>
+            <column name="password" value="admin"/>
+            <column name="role" value="ADMIN"/>
+            <column name="created_at" valueDate="2000-01-01T00:00:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

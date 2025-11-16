@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    container_name: container_postgres
+    environment:
+      POSTGRES_USER: user_123
+      POSTGRES_PASSWORD: pass_123
+      POSTGRES_DB: db_y_lab
+    ports:
+      - "54432:5432"
+    volumes:
+      - y_lab_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_123 -d db_y_lab"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  y_lab_data:
