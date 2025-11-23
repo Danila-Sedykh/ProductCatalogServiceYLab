@@ -1,5 +1,6 @@
 package marketplace.out.repository;
 
+import marketplace.application.port.ProductRepository;
 import marketplace.domain.Product;
 
 import javax.sql.DataSource;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ProductRepositoryJdbc {
+public class ProductRepositoryJdbc implements ProductRepository {
     private final DataSource ds;
     private final String schema;
 
@@ -61,7 +62,7 @@ public class ProductRepositoryJdbc {
         String sql = String.format("DELETE FROM %s.products WHERE id=?", schema);
         try (Connection c = ds.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setLong(0, id);
+            ps.setLong(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -72,7 +73,7 @@ public class ProductRepositoryJdbc {
         String sql = String.format("SELECT id, code, name, category, brand, price FROM %s.products WHERE id=?", schema);
         try (Connection c = ds.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setLong(0, id);
+            ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Product p = mapRow(rs);
@@ -102,7 +103,6 @@ public class ProductRepositoryJdbc {
         p.setCategory(rs.getString("category"));
         p.setBrand(rs.getString("brand"));
         p.setPrice(rs.getBigDecimal("price").doubleValue());
-        // created_at ignored in domain class mapping or add field
         return p;
     }
 }

@@ -26,12 +26,12 @@
             <column name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_users"/>
             </column>
-            <column name="username" type="varchar(100)">
+            <column name="username" type="varchar(255)">
                 <constraints nullable="false" unique="true" uniqueConstraintName="uq_users_username"/>
             </column>
             <column name="password" type="varchar(255)"><constraints nullable="false"/></column>
             <column name="role" type="varchar(50)"><constraints nullable="false"/></column>
-            <column name="created_at" type="timestamp"><constraints nullable="false"/></column>
+            <!--<column name="created_at" type="timestamp"><constraints nullable="false"/></column>-->
         </createTable>
     </changeSet>
 
@@ -48,7 +48,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="6-create-audit-table" author="user_123">
+    <changeSet id="5-create-audit-table" author="user_123">
         <createTable tableName="audit" schemaName="${db.appSchema}">
             <column name="id" type="bigint">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_audit"/>

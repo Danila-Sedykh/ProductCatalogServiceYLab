@@ -30,7 +30,6 @@
             <column name="username" value="admin"/>
             <column name="password" value="admin"/>
             <column name="role" value="ADMIN"/>
-            <column name="created_at" valueDate="2000-01-01T00:00:00"/>
         </insert>
     </changeSet>
 

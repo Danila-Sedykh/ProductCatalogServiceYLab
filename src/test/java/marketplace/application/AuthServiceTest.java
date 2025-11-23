@@ -1,5 +1,6 @@
 package marketplace.application;
 
+import marketplace.config.*;
 import marketplace.db.DataSourceFactory;
 import marketplace.db.LiquibaseRunner;
 import marketplace.out.repository.UserRepositoryJdbc;
@@ -18,19 +19,18 @@ public class AuthServiceTest {
     private UserRepositoryJdbc repo;
     private AuthService auth;
     private static final String APP_SCHEMA = "marketplace";
-    private DataSource dataSource = DataSourceFactory.create(
-            "jdbc:postgresql://localhost:54432/db_y_lab",
-            "user_123",
-            "pass_123",
-            5
+    private DataSource dataSource = DataSourceFactory.create(ConfigLoader.get("db.url"),
+            ConfigLoader.get("db.username"),
+            ConfigLoader.get("db.password"),
+            Integer.parseInt(ConfigLoader.get("db.maximumPoolSize"))
     );
 
     @BeforeEach
     void init() throws Exception {
         LiquibaseRunner.runLiquibase(
                 dataSource,
-                "db/changelog/db-changelog-master.xml",
-                "liquibase_schema",
+                ConfigLoader.get("liquibase.changelog"),
+                ConfigLoader.get("db.liquibaseSchema"),
                 APP_SCHEMA
         );
         tmp = Files.createTempFile("users",".db");

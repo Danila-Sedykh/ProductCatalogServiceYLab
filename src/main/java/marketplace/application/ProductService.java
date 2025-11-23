@@ -1,5 +1,7 @@
 package marketplace.application;
 
+import marketplace.application.port.ProductRepository;
+import marketplace.aspect.Auditable;
 import marketplace.domain.Product;
 import marketplace.out.cache.LruCache;
 import marketplace.out.repository.ProductRepositoryJdbc;
@@ -17,35 +19,40 @@ import java.util.stream.Collectors;
  */
 
 public class ProductService {
-    private final ProductRepositoryJdbc productRepository;
+    private final ProductRepository productRepository;
     private final LruCache<String, List<Product>> cache;
 
-    public ProductService(ProductRepositoryJdbc productRepository, LruCache<String, List<Product>> cache){
+    public ProductService(ProductRepository productRepository, LruCache<String, List<Product>> cache){
         this.productRepository = productRepository;
         this.cache = cache;
     }
 
+    @Auditable(action = "ADD_PRODUCT")
     public void addProduct(Product product) {
         productRepository.save(product);
         cache.invalidateAll();
     }
 
+    @Auditable(action = "UPDATE_PRODUCT")
     public boolean updateProduct(Product updated) {
         boolean result = productRepository.update(updated);
         if (result) cache.invalidateAll();
         return result;
     }
 
+    @Auditable(action = "DELETE_PRODUCT")
     public boolean deleteProduct(Long id) {
         boolean result = productRepository.delete(id);
         if (result) cache.invalidateAll();
         return result;
     }
 
+    @Auditable(action = "SEARCH_BY_ID_PRODUCTS")
     public Optional<Product> getById(Long id) {
         return productRepository.findById(id);
     }
 
+    @Auditable(action = "SEARCH_PRODUCTS")
     public List<Product> search(Map<String, String> criteria, Double minPrice, Double maxPrice) {
         String cacheKey = buildCacheKey(criteria, minPrice, maxPrice);
         List<Product> cached = cache.get(cacheKey);
@@ -82,6 +89,7 @@ public class ProductService {
         return sb.toString();
     }
 
+    @Auditable(action = "COUNT_PRODUCTS")
     public int count() { return productRepository.findAll().size(); }
 
 }

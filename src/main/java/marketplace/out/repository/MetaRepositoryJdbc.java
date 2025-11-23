@@ -1,5 +1,7 @@
 package marketplace.out.repository;
 
+import marketplace.application.port.MetaRepository;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,7 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MetaRepositoryJdbc {
+public class MetaRepositoryJdbc implements MetaRepository {
     private final DataSource ds;
     private final String schema;
 

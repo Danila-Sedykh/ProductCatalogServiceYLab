@@ -1,5 +1,6 @@
 package marketplace.out.repository;
 
+import marketplace.application.port.UserRepository;
 import marketplace.domain.User;
 
 import javax.sql.DataSource;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class UserRepositoryJdbc {
+public class UserRepositoryJdbc implements UserRepository {
     private final DataSource ds;
     private final String schema;
 

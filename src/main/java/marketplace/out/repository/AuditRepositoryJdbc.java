@@ -1,5 +1,7 @@
 package marketplace.out.repository;
 
+import marketplace.application.port.AuditRepository;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,7 +10,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 
 
-public class AuditRepositoryJdbc {
+public class AuditRepositoryJdbc implements AuditRepository {
     private final DataSource ds;
     private final String schema;
 
