@@ -1,14 +1,13 @@
 package marketplace.application;
 
 import marketplace.application.port.AuditRepository;
-import marketplace.domain.User;
-import marketplace.out.repository.AuditRepositoryJdbc;
+import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 
 /**
  * Сервис аудита, сохраняет активность пользователя в репозиторий аудита чперез FileAuditRepository.
  */
+@Service
 public class AuditService {
     private final AuditRepository auditRepository;
 

@@ -6,27 +6,21 @@ import marketplace.domain.User;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
 
 @Aspect
+@Component
 public class AuditAspect {
     private final AuditService auditService;
-    private final ThreadLocal<HttpServletRequest> requestHolder = new ThreadLocal<>();
+    private final HttpServletRequest request;
 
-    public AuditAspect(AuditService auditService) {
+    public AuditAspect(AuditService auditService, HttpServletRequest request) {
         this.auditService = auditService;
-    }
-
-    public void setRequest(HttpServletRequest request) {
-        requestHolder.set(request);
-    }
-
-    public void clearRequest() {
-        requestHolder.remove();
+        this.request = request;
     }
 
     @Around("@annotation(auditable)")
     public Object audit(ProceedingJoinPoint joinPoint, Auditable auditable) throws Throwable {
-        HttpServletRequest request = requestHolder.get();
         User user = request != null ? (User) request.getSession().getAttribute("user") : null;
 
         long start = System.currentTimeMillis();
@@ -43,6 +37,13 @@ public class AuditAspect {
             );
             return result;
         } catch (Throwable t) {
+            long duration = System.currentTimeMillis() - start;
+
+            String details = String.format("Method: %s failed after %d ms, exception: %s",
+                    joinPoint.getSignature().toShortString(), duration, t.toString());
+            auditService.record(user != null ? user.getId() : null,
+                    auditable.action(),
+                    details);
 
             throw t;
         }

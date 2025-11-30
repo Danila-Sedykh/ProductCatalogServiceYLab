@@ -1,5 +1,6 @@
 package marketplace.domain;
 
+import java.math.BigDecimal;
 
 public class Product {
     private Long id;
@@ -7,7 +8,7 @@ public class Product {
     private String name;
     private String category;
     private String brand;
-    private double price;
+    private BigDecimal price;
 
 
 
@@ -51,11 +52,11 @@ public class Product {
         this.brand = brand;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

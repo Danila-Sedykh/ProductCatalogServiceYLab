@@ -2,19 +2,24 @@ package marketplace.out.repository;
 
 import marketplace.application.port.ProductRepository;
 import marketplace.domain.Product;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.*;
 
 import javax.sql.DataSource;
-import java.sql.*;
-import java.time.Instant;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class ProductRepositoryJdbc implements ProductRepository {
     private final DataSource ds;
     private final String schema;
 
-    public ProductRepositoryJdbc(DataSource ds, String schema) {
+    public ProductRepositoryJdbc(DataSource ds, @Value("${db.appSchema}") String schema) {
         this.ds = ds;
         this.schema = schema;
     }
@@ -29,7 +34,7 @@ public class ProductRepositoryJdbc implements ProductRepository {
             ps.setString(2, p.getName());
             ps.setString(3, p.getCategory());
             ps.setString(4, p.getBrand());
-            ps.setBigDecimal(5, java.math.BigDecimal.valueOf(p.getPrice()));
+            ps.setBigDecimal(5, p.getPrice());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     long id = rs.getLong(1);
@@ -50,7 +55,7 @@ public class ProductRepositoryJdbc implements ProductRepository {
             ps.setString(2, p.getName());
             ps.setString(3, p.getCategory());
             ps.setString(4, p.getBrand());
-            ps.setBigDecimal(5, java.math.BigDecimal.valueOf(p.getPrice()));
+            ps.setBigDecimal(5, p.getPrice());
             ps.setLong(6, p.getCode());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -102,7 +107,7 @@ public class ProductRepositoryJdbc implements ProductRepository {
         p.setName(rs.getString("name"));
         p.setCategory(rs.getString("category"));
         p.setBrand(rs.getString("brand"));
-        p.setPrice(rs.getBigDecimal("price").doubleValue());
+        p.setPrice(rs.getBigDecimal("price"));
         return p;
     }
 }

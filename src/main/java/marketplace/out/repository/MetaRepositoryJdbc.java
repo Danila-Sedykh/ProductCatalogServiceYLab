@@ -1,6 +1,8 @@
 package marketplace.out.repository;
 
 import marketplace.application.port.MetaRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -10,11 +12,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class MetaRepositoryJdbc implements MetaRepository {
     private final DataSource ds;
     private final String schema;
 
-    public MetaRepositoryJdbc(DataSource ds, String schema) {
+    public MetaRepositoryJdbc(DataSource ds, @Value("${db.appSchema}") String schema) {
         this.ds = ds;
         this.schema = schema;
     }
