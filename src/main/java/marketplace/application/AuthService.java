@@ -3,7 +3,7 @@ package marketplace.application;
 import marketplace.application.port.UserRepository;
 import marketplace.aspect.Auditable;
 import marketplace.domain.User;
-import marketplace.out.repository.UserRepositoryJdbc;
+import org.springframework.stereotype.Service;
 
 
 import java.util.Optional;
@@ -12,6 +12,7 @@ import java.util.Optional;
  * Авторизация: хранит пользователей в файле через FileUserRepository.
  */
 
+@Service
 public class AuthService {
     private final UserRepository userRepo;
 

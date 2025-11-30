@@ -4,9 +4,10 @@ import marketplace.application.port.ProductRepository;
 import marketplace.aspect.Auditable;
 import marketplace.domain.Product;
 import marketplace.out.cache.LruCache;
-import marketplace.out.repository.ProductRepositoryJdbc;
+import org.springframework.stereotype.Service;
 
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  * Сервис управления товарами. Зависимости инверсированы — репозитории передаются извне.
  */
 
+@Service
 public class ProductService {
     private final ProductRepository productRepository;
     private final LruCache<String, List<Product>> cache;
@@ -53,7 +55,7 @@ public class ProductService {
     }
 
     @Auditable(action = "SEARCH_PRODUCTS")
-    public List<Product> search(Map<String, String> criteria, Double minPrice, Double maxPrice) {
+    public List<Product> search(Map<String, String> criteria, BigDecimal minPrice, BigDecimal maxPrice) {
         String cacheKey = buildCacheKey(criteria, minPrice, maxPrice);
         List<Product> cached = cache.get(cacheKey);
         if (cached != null) return cached;
@@ -72,15 +74,15 @@ public class ProductService {
             }
         }
 
-        if (minPrice != null) predicate = predicate.and(p -> p.getPrice() >= minPrice);
-        if (maxPrice != null) predicate = predicate.and(p -> p.getPrice() <= maxPrice);
+        if (minPrice != null) predicate = predicate.and(p -> p.getPrice().compareTo(minPrice) >= 0);
+        if (maxPrice != null) predicate = predicate.and(p -> p.getPrice().compareTo(maxPrice) <= 0);
 
         List<Product> result = productRepository.findAll().stream().filter(predicate).collect(Collectors.toList());
         cache.put(cacheKey, result);
         return result;
     }
 
-    private String buildCacheKey(Map<String, String> criteria, Double minPrice, Double maxPrice) {
+    private String buildCacheKey(Map<String, String> criteria, BigDecimal minPrice, BigDecimal maxPrice) {
         StringBuilder sb = new StringBuilder();
         if (criteria != null) {
             criteria.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> sb.append(e.getKey()).append("=").append(e.getValue()).append(";"));

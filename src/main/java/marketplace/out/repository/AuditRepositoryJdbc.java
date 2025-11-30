@@ -1,6 +1,8 @@
 package marketplace.out.repository;
 
 import marketplace.application.port.AuditRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -9,12 +11,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 
-
+@Repository
 public class AuditRepositoryJdbc implements AuditRepository {
     private final DataSource ds;
     private final String schema;
 
-    public AuditRepositoryJdbc(DataSource ds, String schema) {
+    public AuditRepositoryJdbc(DataSource ds, @Value("${db.appSchema}") String schema) {
         this.ds = ds;
         this.schema = schema;
     }

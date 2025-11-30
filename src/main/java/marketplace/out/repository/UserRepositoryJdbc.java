@@ -2,19 +2,24 @@ package marketplace.out.repository;
 
 import marketplace.application.port.UserRepository;
 import marketplace.domain.User;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.*;
-import java.time.Instant;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class UserRepositoryJdbc implements UserRepository {
     private final DataSource ds;
     private final String schema;
 
-    public UserRepositoryJdbc(DataSource ds, String schema) {
+    public UserRepositoryJdbc(DataSource ds, @Value("${db.appSchema}") String schema) {
         this.ds = ds;
         this.schema = schema;
     }
